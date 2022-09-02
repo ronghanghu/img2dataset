@@ -90,7 +90,16 @@ def download(
 
     fs, output_path = fsspec.core.url_to_fs(output_folder)
 
-    if not fs.exists(output_path):
+    if incremental_mode.startswith("eval:"):
+            eval_str = incremental_mode[len("eval:"):].strip()
+            question = f"setting done_shards as follows (based on --incremental_mode):\n\tset({eval_str})`\nProceed (y/n)? "
+            ans = ''
+            while ans not in ['y', 'n']:
+                ans = input(question).lower()
+            if ans == 'n':
+                sys.exit(0)
+            done_shards = set(eval(eval_str))
+    elif not fs.exists(output_path):
         fs.mkdir(output_path)
         done_shards = set()
     else:
